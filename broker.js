@@ -2,6 +2,8 @@
 
 'use strict';
 
+console.log('in broker.js')
+
 const modules = ['EBUS', 'EBUS_BROKER']
 const zmq = require('zeromq');
 const { v1: uuid } = require('uuid');
@@ -12,7 +14,8 @@ import * as chs from 'cry-helpers';
 const Log = chs.Log;
 //const Log = require('cry-helpers').Log;
 const log = new Log(modules);
-const envconf = require('cry-helpers').getConf;
+const envconf = chs.getConf;
+//const envconf = require('cry-helpers').getConf;
 const dotenv = require('dotenv')
 const dotenvExpand = require('dotenv-expand')
 const { pack, unpack } = require('./serialize');
