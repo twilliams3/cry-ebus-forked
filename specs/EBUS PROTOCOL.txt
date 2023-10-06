@@ -1,0 +1,64 @@
+EBUS PROTOCOL
+version 1.0, as of August 2018
+
+
+CLIENT
+	Client MUST use ZMQ for communication.
+	Client MUST use 'dealer' socket to connect to the broker.
+	Cleint MUST use 'pub' socket for publishing 
+
+	Client MAY submit requests to the Broker by issuing REQUEST message.
+
+	Client MUST treat any inbound message from the Broker as a heartbeat.
+	Client MUST send a PING request to broker if no inbound messages were received for a specified amount of time.
+	Client MUST respond to a received PING request by sending a HEARTBEAT requst to the Broker.
+	Client MAY resend unanswered request to the broker- 
+
+WORKER 
+	Worker MAY receive REQUEST messages from the Broker.
+	Worker 	
+
+
+HEARBEAT MESSAGE
+
+	FRAME 0		type of sender 		'EBW01'
+	FRAME 1		uid of sender
+	FRAME 2		message type 		5
+
+
+PING MESSAGE 
+	request to return heartbeat message to the sender
+
+	FRAME 0		type of sender 		'EBW01'
+	FRAME 1		uid of sender
+	FRAME 2		message type 		4
+
+
+REPLY MESSAGE
+	we have received replay to a request
+	FRAME 0		type of sender 		'EBW01'
+	FRAME 1		uid of worker
+	FRAME 2		message type 		3
+	FRAME 3		service name
+	FRAME 4		original request uid
+	FRAME 5		json formatted data (optional)
+
+OUTBOUND MESSAGES
+
+REQUEST MESSAGE 
+	request service of specified type
+	FRAME 0		type of sender 		'EBC01'
+	FRAME 1		uid of client
+	FRAME 2		message type 		2
+	FRAME 3		service name
+	FRAME 4		request uid
+	FRAME 5		request resend count
+	FRAME 6		json formatted data (optional)
+
+READY MESSAGE
+	send from worker to ebus, informig ebus that worker is ready to receive work for service
+
+	FRAME 0		type of sender 		'EBW01'
+	FRAME 1		uid of worker
+	FRAME 2		message type 		1
+	FRAME 3		service

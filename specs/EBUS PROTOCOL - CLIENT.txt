@@ -1,0 +1,118 @@
+EBUS PROTOCOL FOR CLIENTS
+version 1.0, as of August 2018
+
+
+CLIENT
+
+	Client IS any software that uses (differently named) services provided by Workers.
+	Client connects to a Broker instead of connecting to Workers directly.
+
+	Client MUST use ZMQ for communication.
+	Client MUST 'connect' to a  'dealer' socket of a Broker (server)
+	Client MAY 'connect' to a 'pub' socket for broadcasting messages
+	Client MAY 'connect' to a 'sub' socket for listening to broadcasts
+
+	Client MAY submit requests to the Broker by issuing REQUEST messages. Each such request MUST specify the name of the requested service.
+	Client MUST listen to messages sent from the Broker to the Client.
+    Client MUST discard all received messages unless received from a worker.
+	Client MUST treat any valid inbound message from the Broker as a heartbeat.
+	Client MUST send a PING request to broker if no inbound messages were received for a specified amount of time.
+	Client MUST respond to a received PING request by sending a HEARTBEAT message to the Broker.
+	Client MUST assign a uniqueId to each request.
+    Client MUST disconnect all sockets if it receives a DISCONNECT message. Client MAY then immediatelly reconnect to the Broker.
+    Client MUST disconnect and MAY then reconnect to the Broker if no heartbeats were received in a specified amount of time.
+    Client MAY discard unanswered requests when it receives a REJECT message from a Broker.
+    Client MAY process responses to requests, received in REPLY messages.
+	Client MAY resend unanswered request to the Broker (e.g. after a specified amount of time has passed without an answer), provided that request uniqueid remains the same.
+	Client MAY expire (discard) unanswered messages after a specified amount of time with an answer.
+
+
+INBOUND MESSAGES
+================
+
+HEARBEAT MESSAGE
+    Client MAY receive HEARTBEAT messages on its 'dealer' port.
+    These messages notify the client that the Broker is still present (delaying re-connect).
+
+    FRAME 0     empty
+	FRAME 1		type of sender 		'EBW01'
+	FRAME 2		message type 		'HEARTBEAT'
+
+SERVICES MESSAGE
+    Client MAY receive SERVICES messages on its 'dealer' port.
+    These message is a response to sending a REQUEST with service=SERVICES
+
+    FRAME 0     empty
+	FRAME 1		type of sender 		'EBW01'
+	FRAME 2		message type 		'SERVICES'
+    FRAME 3     requestId
+    FRAME 4     json-formatted array of services attached to broker
+
+PING MESSAGE 
+    Client MAY receive PING messages on its 'dealer' port.
+	With a PING message broker enquires is client is still present.
+    Client MUST respond by sending an outbound HEARTBEAT message to the Broker.
+
+    FRAME 0     empty
+	FRAME 1		type of sender 		'EBW01'
+	FRAME 2		message type 		'PING'
+
+
+DISCONNECT MESSAGE
+    Client MAY receive DISCONNECT messages on its 'dealer' port.
+    Broker requires client to disconnect.
+    Client MUST close all ports and MAY immediatelly reconnect.
+
+    FRAME 0     empty
+	FRAME 1		type of sender 		'EBW01'
+	FRAME 2		message type 		'DISCONNECT'
+
+
+REJECT MESSAGE    
+    Client MAY receive REJECT messages from Workers (via Broker).
+    A REJECT message means that a Worker has rejected a service request.
+    Client MAY discard the rejected request.
+    Client MAY NOT re-submit rejected requests only because they were rejected.
+
+    FRAME 0     empty
+	FRAME 1		type of sender 		'EBW01'
+	FRAME 2		message type 		'REJECT'    
+
+
+REPLY MESSAGE
+    Client MAY receive REPLY messages from Workers (via Broker).
+	With a REPLY message, a Worker is returning results for a previously sent request.
+    Client MUST discard REPLY messages for requests that were not initiated by this client.
+
+    FRAME 0     empty
+	FRAME 1		type of sender 		'EBW01'
+	FRAME 2		message type 		'REPLY'
+	FRAME 3		original requestId
+	FRAME 4		json formatted data (optional)
+
+
+SUB MESSAGE
+    Client MAY 'connect' to a 'sub' socket to receive broadcast.
+    Client MAY subscribe to serveral channels. Each channel is matched by the begining of its name (subscrition to "A" matches "A", "AB", "ABCD" etc).
+    Client MAY receive published notifications for subscribed channels.
+
+
+OUTBOUND MESSAGES
+=================
+
+REQUEST MESSAGE
+    Client MUST direct service requests to its 'dealer' socket.
+	Request service of specified name.
+    Broker MAY respond with REPLY or REJECT message.
+	
+    FRAME 0     empty
+    FRAME 1		type of sender 		'EBC01'
+	FRAME 2		message type 		'REQUEST'
+    FRAME 3     service name        (a string)
+	FRAME 4		request uniqueid    (a string)
+	FRAME 5		json formatted data (optional)
+
+
+PUBLISH MESSAGE
+    Client MAY connect to its 'pub' socket  to  broadcast messages.
+    Client MUST publish broadcasts by specifying a 'channel'.

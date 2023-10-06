@@ -1,0 +1,25 @@
+{
+    "name": "cry-ebus",
+    "version": "0.56.5",
+    "description": "enterprise bus",
+    "main": "ebus.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Primoz Krajnik",
+    "license": "ISC",
+    "dependencies": {
+      "@pm2/io": "^4.3.5",
+      "bson": "^4.2.2",
+      "cry-helpers": "^2.1.11",
+      "debug": "^4.3.1",
+      "dotenv": "^8.2.0",
+      "dotenv-expand": ">=5.1.0",
+      "pako": "^2.0.2",
+      "uuid": "^8.3.1",
+      "zeromq": "^5.3.1"
+    },
+    "overrides": {
+      "node-fetch":"2.6.6"
+    }
+  }
